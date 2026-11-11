@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SilentGuard — Enterprise Presentation Deck</title>
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: #1f293d;
+      --border-color: #374151;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-indigo: #6366f1;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Top progress bar */
+    #progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      z-index: 100;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald), var(--accent-indigo));
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Slide Deck Container */
+    #deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 3rem 4.5rem 5rem 4.5rem;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transform: scale(0.98) translateY(10px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* Typography & Headers */
+    .slide-category {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .slide-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.6rem;
+    }
+
+    .slide-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 1.8rem;
+      line-height: 1.5;
+    }
+
+    /* Grids & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      flex: 1;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      flex: 1;
+    }
+
+    .card {
+      background: rgba(31, 41, 61, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-body {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    /* Badges & Tags */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-cyan { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    /* Bullet lists */
+    ul.feature-list {
+      list-style: none;
+      margin-top: 0.5rem;
+    }
+    ul.feature-list li {
+      position: relative;
+      padding-left: 1.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.92rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    ul.feature-list li::before {
+      content: "▹";
+      position: absolute;
+      left: 0;
+      color: var(--accent-cyan);
+      font-weight: bold;
+    }
+
+    /* Code block styling */
+    pre.code-block {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      color: #58a6ff;
+      overflow-x: auto;
+      line-height: 1.45;
+      margin-top: 0.6rem;
+    }
+
+    /* Comparison Table */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    table.data-table th {
+      background: rgba(17, 24, 39, 0.9);
+      color: #94a3b8;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+    }
+    table.data-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+      color: #e2e8f0;
+      vertical-align: top;
+    }
+    table.data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Architecture Box */
+    .arch-flow {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      flex: 1;
+    }
+    .arch-step {
+      flex: 1;
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .arch-step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Metric counter */
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Bottom Navigation Bar */
+    #nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(11, 15, 25, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(55, 65, 81, 0.6);
+      padding: 0.6rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 90;
+      font-size: 0.85rem;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn:hover {
+      background: #334155;
+      color: #fff;
+      border-color: #475569;
+    }
+    .btn-primary {
+      background: var(--accent-cyan);
+      color: #0b0f19;
+      border-color: var(--accent-cyan);
+      font-weight: 600;
+    }
+    .btn-primary:hover {
+      background: #38bdf8;
+      border-color: #38bdf8;
+    }
+
+    select#slide-select {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      outline: none;
+      max-width: 320px;
+    }
+
+    /* Speaker Notes Drawer */
+    #speaker-notes-drawer {
+      position: fixed;
+      bottom: 45px;
+      left: 0;
+      width: 100%;
+      max-height: 240px;
+      background: #0f172a;
+      border-top: 2px solid var(--accent-indigo);
+      padding: 1.2rem 2.5rem;
+      transform: translateY(105%);
+      transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+      z-index: 95;
+      overflow-y: auto;
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+    }
+    #speaker-notes-drawer.open {
+      transform: translateY(0);
+    }
+    .speaker-notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-indigo);
+      font-weight: 700;
+    }
+    .speaker-notes-content {
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: #cbd5e1;
+    }
+    .speaker-notes-content strong {
+      color: #38bdf8;
+    }
+
+    /* Print styles */
+    @page {
+      size: 16in 9in;
+      margin: 0;
+    }
+    @media print {
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: #0b0f19 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #nav-bar, #progress-container, #speaker-notes-drawer {
+        display: none !important;
+      }
+      #deck {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        overflow: visible !important;
+      }
+      .slide {
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+        opacity: 1 !important;
+        transform: none !important;
+        width: 16in !important;
+        height: 9in !important;
+        min-height: 9in !important;
+        max-height: 9in !important;
+        page-break-before: always !important;
+        page-break-after: always !important;
+        break-before: page !important;
+        break-after: page !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        padding: 0.55in 0.75in !important;
+        background-color: #0b0f19 !important;
+      }
+      .slide:first-of-type {
+        page-break-before: auto !important;
+        break-before: auto !important;
+      }
+      .card {
+        background: #172033 !important;
+        border: 1px solid #334155 !important;
+        break-inside: avoid !important;
+      }
+      pre.code-block {
+        background: #0d1117 !important;
+        border: 1px solid #30363d !important;
+      }
+      table.data-table th {
+        background: #111827 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <!-- Deck of Slides -->
+  <div id="deck">
+
+    <!-- SLIDE 1: Title & Hero -->
+    <section class="slide active" id="slide-1" data-title="Executive Title & Vision">
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1000px; margin: 0 auto;">
+        <div class="slide-category">
+          <span class="badge badge-cyan">Motherson Group & Enterprise Data Engineering</span>
+          <span>CONFIDENTIAL / REPORTING SHOWCASE</span>
+        </div>
+        <h1 style="font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin: 1rem 0; background: linear-gradient(135deg, #ffffff 40%, #38bdf8 75%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          🛡️ SilentGuard
+        </h1>
+        <p style="font-size: 1.5rem; color: #94a3b8; font-weight: 400; margin-bottom: 2rem; line-height: 1.4;">
+          Deterministic Data Quality, Schema Drift Defense & Silent Failure Remediation Engine for Enterprise Pipelines
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;">
+          <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+            <div class="card-title" style="font-size: 1rem; color: var(--accent-cyan);">🎯 The Mission</div>
+            <div class="card-body" style="font-size: 0.88rem;">Stop bad data from entering downstream ERPs, databases, and AI data lakes before it breaks operations.</div>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-emerald);">
+            <div class="card-title" style="font-size: 1rem; color: var(--accent-emerald);">⚙️ The Architecture</div>
+            <div class="card-body" style="font-size: 0.88rem;">Full-Stack Engine with Spring Boot 4, PostgreSQL 16 dynamic DDL, and React 19 interactive stewardship.</div>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-indigo);">
+            <div class="card-title" style="font-size: 1rem; color: var(--accent-indigo);">👥 Team Delivery</div>
+            <div class="card-body" style="font-size: 0.88rem;">Full 6-member engineering unit covering UI, API Gateway, Rule Engines, Ingestion, Partitioning & Persistence.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 2rem; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; font-size: 0.88rem; color: #94a3b8;">
+          <div><strong>Team Members:</strong> 6 Dedicated Engineering Leads</div>
+          <div><strong>Tech Stack:</strong> Java 17 • Spring Boot 4 • PostgreSQL 16 • React 19 • TypeScript</div>
+          <div><strong>Status:</strong> Production-Ready Core</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Executive Summary & The Problem -->
+    <section class="slide" id="slide-2" data-title="Executive Context & Business Dilemma">
+      <div class="slide-category">Executive Context • The Problem Space</div>
+      <h2 class="slide-title">The Enterprise Data Dilemma: Why Pipelines Crash Silently</h2>
+      <p class="slide-subtitle">Modern enterprises move millions of records daily via CSV file transfers, batch ETLs, and third-party APIs. But standard schemas have a fatal blind spot.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-rose);">❌ Traditional Schema Validation (The Blind Spot)</div>
+          <div class="card-body">
+            <p>Traditional tools (Postgres schemas, JSON Schema, CSV checkers) only ask:</p>
+            <ul class="feature-list" style="margin-top: 0.8rem;">
+              <li><strong>Do the column headers exist?</strong> (Yes)</li>
+              <li><strong>Is it valid UTF-8 text?</strong> (Yes)</li>
+              <li><strong>Is the file format valid CSV?</strong> (Yes)</li>
+            </ul>
+            <p style="margin-top: 1rem; color: var(--accent-rose); font-weight: 600;">Result: The file passes with HTTP 200 OK — and poisons the entire data warehouse downstream.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">🛡️ SilentGuard Semantic Defense</div>
+          <div class="card-body">
+            <p>SilentGuard asks the critical business questions standard parsers miss:</p>
+            <ul class="feature-list" style="margin-top: 0.8rem;">
+              <li><strong>Salary: -$5,000</strong> — technically a valid number, but financially impossible.</li>
+              <li><strong>Delivery Date &lt; Manufacturing Date</strong> — temporal impossibility.</li>
+              <li><strong>Supplier Code: 'UNKNOWN_99'</strong> — breaks ERP referential integrity.</li>
+              <li><strong>Duplicate Employee IDs</strong> — causes split payroll wire transfers.</li>
+            </ul>
+            <p style="margin-top: 1rem; color: var(--accent-emerald); font-weight: 600;">Result: 100% deterministic detection, cell-level flagging, and audited remediation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top: 1.25rem;">
+        <div class="card" style="padding: 1rem;">
+          <div class="metric-value" style="color: var(--accent-rose);">$12.9M</div>
+          <div class="metric-label">Average Annual Enterprise Loss (Gartner Bad Data Metric)</div>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <div class="metric-value" style="color: var(--accent-amber);">73%</div>
+          <div class="metric-label">Pipeline Failures Caused by Semantic Field Corruptions</div>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <div class="metric-value" style="color: var(--accent-cyan);">&lt; 150ms</div>
+          <div class="metric-label">SilentGuard Ingestion & Validation Response Time</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: Anatomy of a Silent Failure -->
+    <section class="slide" id="slide-3" data-title="Anatomy of a Silent Failure">
+      <div class="slide-category">Technical Problem Deep Dive</div>
+      <h2 class="slide-title">Anatomy of a "Silent Failure": Why Traditional SQL Ingestion Fails</h2>
+      <p class="slide-subtitle">When dirty CSVs hit standard relational databases, two bad things happen: the entire ingest crashes, or corrupt records slip through undetected.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Scenario A: The Hard Crash (Rigid SQL Types)</div>
+          <div class="card-body">
+            <p>If a table is defined as <code>salary NUMERIC(10,2)</code> and an upstream system sends <code>"N/A"</code> or <code>"PENDING"</code>:</p>
+            <pre class="code-block" style="color: var(--accent-rose);">ERROR: invalid input syntax for type numeric: "N/A"
+STATEMENT: INSERT INTO payroll_records VALUES (101, 'John', 'N/A')
+[FATAL] ETL Job #482 aborted after 3 hours. 500,000 records lost.</pre>
+            <p style="margin-top: 0.8rem; font-size: 0.85rem; color: #94a3b8;">
+              ⚠️ The entire pipeline dies for everyone because of one malformed value.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Scenario B: The Undetected Poison (Loose Types)</div>
+          <div class="card-body">
+            <p>If the pipeline stores strings to avoid crashes, semantic rules are bypassed:</p>
+            <pre class="code-block" style="color: var(--accent-amber);">{
+  "employee_id": 104,
+  "salary": -50000,           // Negative salary!
+  "dispatch_date": "2026-05-01",
+  "mfg_date": "2026-05-15"    // Dispatched 2 weeks BEFORE manufacturing!
+}</pre>
+            <p style="margin-top: 0.8rem; font-size: 0.85rem; color: #94a3b8;">
+              ⚠️ The system returns HTTP 200. Accounting sends incorrect wire instructions; factory dispatches defective lots.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; border-left: 4px solid var(--accent-cyan);">
+        <div class="card-title" style="color: var(--accent-cyan);">💡 The SilentGuard Solution: Dynamic Polymorphic Ingestion</div>
+        <div class="card-body">
+          SilentGuard automatically isolates raw incoming CSVs into dedicated <code>ds_&lt;filename&gt;</code> PostgreSQL staging tables with sanitised <code>TEXT</code> columns. It preserves raw data without ingest crashes, then unleashes a multi-category deterministic rule engine to pinpoint, quarantine, and allow interactive correction of corrupt cells.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Three Enterprise Domains / Presets -->
+    <section class="slide" id="slide-4" data-title="Enterprise Use Cases & Demo Presets">
+      <div class="slide-category">Business Solutions • Pre-Configured Domains</div>
+      <h2 class="slide-title">Multi-Domain Support: 3 Enterprise Presets Out-of-the-Box</h2>
+      <p class="slide-subtitle">SilentGuard is pre-seeded with real-world enterprise rule suites and datasets, ready for immediate operational deployment.</p>
+
+      <div class="grid-3">
+        <div class="card" style="border-top: 4px solid var(--accent-indigo);">
+          <div class="badge badge-indigo" style="width: fit-content; margin-bottom: 0.5rem;">Corporate HR Operations</div>
+          <div class="card-title">Employee Master Roster</div>
+          <div class="card-body">
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.6rem;">File: <code>employee_master_roster.csv</code></p>
+            <ul class="feature-list">
+              <li><strong>Duplicate Detection:</strong> Flags identical Employee IDs across branch dispatches.</li>
+              <li><strong>Format Integrity:</strong> RFC 5322 regex on corporate email addresses.</li>
+              <li><strong>Boundary Validation:</strong> Flags negative or zero salary figures.</li>
+              <li><strong>Department Catalog:</strong> Verifies <code>department_id</code> against authorized corporate budget centers.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--accent-emerald);">
+          <div class="badge badge-emerald" style="width: fit-content; margin-bottom: 0.5rem;">Automotive MES Gateway</div>
+          <div class="card-title">Motherson Parts Dispatch</div>
+          <div class="card-body">
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.6rem;">File: <code>motherson_parts_batch_dispatch.csv</code></p>
+            <ul class="feature-list">
+              <li><strong>Cross-Field Chronology:</strong> Asserts <code>dispatch_date &gt;= manufacturing_date</code>.</li>
+              <li><strong>Negative Quantities:</strong> Prevents inventory ledger skewing.</li>
+              <li><strong>Supplier Registry:</strong> Validates Tier-1/Tier-2 vendor authorization codes.</li>
+              <li><strong>Batch Traceability:</strong> Flags missing lot numbers for recall safety.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--accent-amber);">
+          <div class="badge badge-amber" style="width: fit-content; margin-bottom: 0.5rem;">FinTech & ERP Reconciliation</div>
+          <div class="card-title">Financial Orders & Ledger</div>
+          <div class="card-body">
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.6rem;">File: <code>financial_orders.csv</code></p>
+            <ul class="feature-list">
+              <li><strong>ISO Currency Codes:</strong> Rejects unapproved currency identifiers.</li>
+              <li><strong>Transaction Deduplication:</strong> Prevents double-billing customer cards.</li>
+              <li><strong>Zero/Negative Amount:</strong> Isolates fraudulent or corrupted payments.</li>
+              <li><strong>Customer KYC Reference:</strong> Cross-checks customer IDs against active ledger.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: Full System Architecture Overview -->
+    <section class="slide" id="slide-5" data-title="System Architecture Diagram">
+      <div class="slide-category">System Engineering • High-Level Architecture</div>
+      <h2 class="slide-title">End-to-End Enterprise System Architecture</h2>
+      <p class="slide-subtitle">A decoupled three-tier architecture ensuring sub-second response times, complete auditability, and zero data loss.</p>
+
+      <div class="arch-flow">
+        <div class="arch-step" style="border-top: 4px solid var(--accent-cyan);">
+          <div class="arch-step-num">1</div>
+          <div class="card-title" style="color: var(--accent-cyan); font-size: 1.05rem;">Client Presentation Tier</div>
+          <div class="badge badge-cyan" style="width: fit-content; margin-bottom: 0.5rem;">React 19 + TypeScript + Vite 8</div>
+          <ul class="feature-list" style="font-size: 0.85rem;">
+            <li>Executive Dashboard & Health Dial</li>
+            <li>Interactive Grid with cell-level error highlighting</li>
+            <li>In-place double-click record editing</li>
+            <li>Auto-Fix Verification side-by-side diff modal</li>
+            <li>Dynamic Column Addition with schema detection</li>
+            <li>Local offline fallback engine</li>
+          </ul>
+        </div>
+
+        <div class="arch-step" style="border-top: 4px solid var(--accent-emerald);">
+          <div class="arch-step-num">2</div>
+          <div class="card-title" style="color: var(--accent-emerald); font-size: 1.05rem;">Business Logic & API Tier</div>
+          <div class="badge badge-emerald" style="width: fit-content; margin-bottom: 0.5rem;">Spring Boot 4 + Java 17</div>
+          <ul class="feature-list" style="font-size: 0.85rem;">
+            <li>RESTful API Controllers (Datasets, Rules, Validation, Audit)</li>
+            <li>Streaming CSV Parser (Apache Commons CSV)</li>
+            <li>Deterministic 8-Category Validation Engine</li>
+            <li>Spring Batch multithreaded chunk partitioner</li>
+            <li>Continuous Defect Density Health Score algorithm</li>
+            <li>Global Exception & CORS Security filter</li>
+          </ul>
+        </div>
+
+        <div class="arch-step" style="border-top: 4px solid var(--accent-indigo);">
+          <div class="arch-step-num">3</div>
+          <div class="card-title" style="color: var(--accent-indigo); font-size: 1.05rem;">Data Persistence Tier</div>
+          <div class="badge badge-indigo" style="width: fit-content; margin-bottom: 0.5rem;">PostgreSQL 16 + JPA / Hibernate</div>
+          <ul class="feature-list" style="font-size: 0.85rem;">
+            <li>5 Core Schema Tables (Metadata, Rules, Runs, Issues, Audit)</li>
+            <li>Dynamic Table Generation (<code>ds_&lt;filename&gt;</code>)</li>
+            <li>Parameterized Batch SQL Inserts (Zero SQLi)</li>
+            <li>HikariCP high-throughput connection pooling</li>
+            <li>Automated tri-preset database seeding on startup</li>
+            <li>Immutable audit logging for compliance</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: The 8-Category Validation Engine -->
+    <section class="slide" id="slide-6" data-title="Validation Intelligence Engine">
+      <div class="slide-category">Core Intelligence • Validation Algorithms</div>
+      <h2 class="slide-title">The 8 Deterministic Quality Rule Processors</h2>
+      <p class="slide-subtitle">SilentGuard executes an exhaustive suite of deterministic quality checks across single columns, composite keys, and cross-column timelines.</p>
+
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-rose);">1. REQUIRED</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            Catches missing, null, whitespace-only, or dummy string values (<code>"N/A"</code>, <code>"null"</code>).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-rose);">2. UNIQUENESS</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            O(1) hash map frequency tracker catching duplicate Primary Keys and composite keys.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-amber);">3. MIN / MAX RANGE</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            Safely parses numeric strings and checks strict boundary constraints (e.g. salary &gt;= 0).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-cyan);">4. FORMAT / REGEX</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            Validates pattern conformity (RFC 5322 emails, ISO 8601 dates, alphanumeric SKUs).
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-top: 1rem;">
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-emerald);">5. CROSS-FIELD</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            Chronological multi-column logic (e.g. <code>dispatch_date &gt;= manufacturing_date</code>).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-purple);">6. REFERENTIAL</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            Validates foreign keys against enterprise master catalogs (departments, suppliers, currencies).
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-rose);">7. SCHEMA DRIFT</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            Alerts instantly if upstream CSV transfers drop or rename critical expected columns.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.95rem; color: var(--accent-cyan);">8. CHECK CONSTRAINT</div>
+          <div class="card-body" style="font-size: 0.82rem;">
+            Evaluates multi-valued delimited lists (comma, pipe, semicolon) against rule specifications.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: Mathematical Health Scoring Model -->
+    <section class="slide" id="slide-7" data-title="Mathematical Health Score Model">
+      <div class="slide-category">Mathematical Modeling • Quality Metrics</div>
+      <h2 class="slide-title">Graduated Continuous Health Score Algorithm</h2>
+      <p class="slide-subtitle">Traditional binary scoring drops entire datasets to 0% if one error occurs. SilentGuard implements a graduated continuous scoring formula.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">The Scoring Formula</div>
+          <div class="card-body">
+            <p>Our server-side algorithm balances the <strong>Pass Ratio</strong> against <strong>Weighted Defect Density</strong>:</p>
+            <pre class="code-block">PassRatio = PassedRecords / TotalRecords
+
+WeightedDefects = (Critical * 2.5) + (Error * 1.0) + (Warning * 0.2)
+
+DefectDensity = WeightedDefects / TotalRecords
+
+DensityDeduction = min(30.0, DefectDensity * 20.0)
+
+HealthScore = round(PassRatio * (100.0 - DensityDeduction))</pre>
+            <p style="margin-top: 0.8rem; font-size: 0.85rem; color: #94a3b8;">
+              Clamped strictly between 0% and 100%. Ensures proportional, realistic health feedback.
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Severity Hierarchy & Weights</div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Severity</th>
+                  <th>Weight</th>
+                  <th>Examples</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="badge badge-rose">CRITICAL</span></td>
+                  <td><strong>2.5×</strong></td>
+                  <td>Duplicate PK, Schema Drift, Negative Salary</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-amber">ERROR</span></td>
+                  <td><strong>1.0×</strong></td>
+                  <td>Invalid Email Regex, Unknown Department Code</td>
+                </tr>
+                <tr>
+                  <td><span class="badge badge-cyan">WARNING</span></td>
+                  <td><strong>0.2×</strong></td>
+                  <td>Trailing whitespace, non-standard casing</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top: 1.2rem; background: rgba(16, 185, 129, 0.1); padding: 0.75rem; border-radius: 6px; border-left: 3px solid var(--accent-emerald); font-size: 0.85rem;">
+              ✅ <strong>Client-Server Parity:</strong> Both <code>ValidationEngineService.java</code> and <code>validationEngine.ts</code> compute identical scores down to the decimal point!
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: Dynamic Database Tier & SQL Injection Defense -->
+    <section class="slide" id="slide-8" data-title="Dynamic Database Tier & Security">
+      <div class="slide-category">Database Engineering • Dynamic DDL & Security</div>
+      <h2 class="slide-title">Dynamic PostgreSQL DDL & Polymorphic Ingest</h2>
+      <p class="slide-subtitle">How SilentGuard provisions dedicated relational staging tables on the fly without database crashes or SQL injection risks.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-indigo);">1. Dynamic DDL Generation</div>
+          <div class="card-body">
+            <p>When a user uploads <code>dispatch_orders.csv</code>, <code>CsvImportService</code> parses the headers and executes dynamic SQL via <code>JdbcTemplate</code>:</p>
+            <pre class="code-block">CREATE TABLE IF NOT EXISTS ds_dispatch_orders_17145892 (
+    _row_id SERIAL PRIMARY KEY,
+    "order_id" TEXT,
+    "customer_name" TEXT,
+    "dispatch_date" TEXT,
+    "amount" TEXT
+);</pre>
+            <ul class="feature-list" style="margin-top: 0.6rem; font-size: 0.85rem;">
+              <li><strong>Why TEXT columns?</strong> Polymorphic values (e.g. <code>"PENDING"</code> in numeric fields) are safely stored without ingest failure.</li>
+              <li><strong>Collision Handling:</strong> Suffixes deduplicate identical column names.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">2. Parameterized Batch Ingestion</div>
+          <div class="card-body">
+            <p>To eliminate SQL injection, column names are sanitized with a strict regex whitelist, and cell values are bound using parameterized SQL placeholders:</p>
+            <pre class="code-block">// Sanitization: Strip non-alphanumeric characters
+String safeCol = rawHeader.replaceAll("[^a-zA-Z0-9_]", "_");
+
+// Safe parameterized batch execution
+String sql = "INSERT INTO " + tableName + " VALUES (?, ?, ?, ?)";
+jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+    // Bind string parameters safely
+});</pre>
+            <ul class="feature-list" style="margin-top: 0.6rem; font-size: 0.85rem;">
+              <li><strong>Zero SQLi:</strong> Untrusted CSV data never touches raw SQL text.</li>
+              <li><strong>High Speed:</strong> Batch commits 5,000+ rows per JDBC round-trip.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 9: High-Throughput Batch Engine & Partitioning -->
+    <section class="slide" id="slide-9" data-title="High-Throughput Batch Partitioning">
+      <div class="slide-category">Performance Engineering • High-Throughput Partitioning</div>
+      <h2 class="slide-title">Spring Batch Architecture & Parallel Partitioning</h2>
+      <p class="slide-subtitle">Processing enterprise files exceeding 500,000+ records with constant O(1) memory overhead and multithreaded chunking.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Chunk-Oriented Processing</div>
+          <div class="card-body">
+            <p>Instead of reading massive 50MB+ files into JVM memory at once:</p>
+            <ul class="feature-list" style="margin-top: 0.5rem; font-size: 0.85rem;">
+              <li>Configurable chunks (<code>DEFAULT_CHUNK_SIZE = 5,000</code>).</li>
+              <li>Streaming <code>BufferedReader</code> and <code>CSVParser</code>.</li>
+              <li>Garbage collection friendly — memory footprint stays flat at <strong>&lt; 64MB</strong> regardless of file size.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Parallel Worker Threads</div>
+          <div class="card-body">
+            <p>Implemented in <code>SpringBatchPartitioningService.java</code>:</p>
+            <ul class="feature-list" style="margin-top: 0.5rem; font-size: 0.85rem;">
+              <li>Splits massive datasets across <strong>4 parallel worker threads</strong>.</li>
+              <li>Each thread parses and executes rule batches independently.</li>
+              <li>Results aggregated into master <code>ValidationRunEntity</code>.</li>
+              <li>Delivers <strong>&gt; 25,000 records/sec</strong> throughput.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-amber);">Fault Tolerance & Skip Policy</div>
+          <div class="card-body">
+            <p>Enterprise reliability when reading corrupted files:</p>
+            <ul class="feature-list" style="margin-top: 0.5rem; font-size: 0.85rem;">
+              <li>Malformed byte sequences are quarantined rather than crashing the batch.</li>
+              <li>Individual corrupt records logged into skip registry.</li>
+              <li>Batch continues to execute to completion.</li>
+              <li>Metrics returned: throughput, execution time, chunk count.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700; color: #fff;">Performance Benchmark Endpoint: <code>POST /api/datasets/batch-process</code></div>
+            <div style="font-size: 0.85rem; color: #94a3b8;">Returns real-time diagnostics: <code>throughputRecordsPerSec</code>, <code>totalChunks</code>, <code>executionTimeMs</code>.</div>
+          </div>
+          <span class="badge badge-emerald">Tested up to 500,000 Records</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 10: Dual-Mode Resilient Frontend Architecture -->
+    <section class="slide" id="slide-10" data-title="Frontend Architecture & Dual Engine">
+      <div class="slide-category">Frontend Architecture • Dual-Mode Resilience</div>
+      <h2 class="slide-title">React 19 Frontend with Isomorphic Dual-Engine Parity</h2>
+      <p class="slide-subtitle">The user interface operates with zero latency, providing seamless offline capability if the backend connection is interrupted.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Mode 1: Connected Mode (PostgreSQL + Spring Boot)</div>
+          <div class="card-body">
+            <p>The standard enterprise production configuration:</p>
+            <ul class="feature-list" style="margin-top: 0.6rem;">
+              <li><code>Navbar.tsx</code> polls <code>/api/health</code> heartbeat.</li>
+              <li>Renders <code>🟢 PostgreSQL 16 Connected</code> indicator.</li>
+              <li>Fetches and mutates datasets via REST API (<code>/api/datasets</code>, <code>/api/validation</code>).</li>
+              <li>Persists all steward remediation edits and auto-fixes directly into database tables.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-amber);">Mode 2: Resilient Client Fallback Engine</div>
+          <div class="card-body">
+            <p>If network disconnects or local offline demo is needed:</p>
+            <ul class="feature-list" style="margin-top: 0.6rem;">
+              <li>Navbar switches instantly to <code>🟡 Client-Side Fallback</code>.</li>
+              <li><code>validationEngine.ts</code> executes the identical 8-rule deterministic engine entirely in the browser.</li>
+              <li>Zero UI freezes or error modals — data stewards continue reviewing and cleaning records smoothly.</li>
+              <li>Syncs changes back when connection restores.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem;">
+        <div class="card-title" style="font-size: 1rem; color: #fff;">Key Frontend Technology Stack</div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">
+          <span class="badge badge-cyan">React 19</span>
+          <span class="badge badge-cyan">TypeScript 5</span>
+          <span class="badge badge-indigo">Vite 8 Bundler</span>
+          <span class="badge badge-emerald">Tailwind CSS v4</span>
+          <span class="badge badge-amber">Lucide Icons</span>
+          <span class="badge badge-purple">HTML5 Drag & Drop File API</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 11: Interactive Data Explorer & In-Place Editing -->
+    <section class="slide" id="slide-11" data-title="Data Explorer & Stewardship">
+      <div class="slide-category">User Experience • Interactive Data Stewardship</div>
+      <h2 class="slide-title">Interactive Data Grid & Cell-Level Defect Remediation</h2>
+      <p class="slide-subtitle">Moving beyond static error logs to a dynamic, spreadsheet-grade editing experience for data stewards.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Spreadsheet Grid with Cell Flagging</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Color-Coded Defect Cells:</strong> Red for Critical, Amber for Errors, Blue for Warnings.</li>
+              <li><strong>Interactive Tooltip:</strong> Hovering over any cell reveals the exact rule violated and expected condition.</li>
+              <li><strong>Multi-Dimensional Filtering:</strong> Filter rows by severity level, column name, or error type.</li>
+              <li><strong>Global Search:</strong> Instantly search across thousands of cells with memoized React hooks.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">In-Place Cell Editing & Live Sync</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Double-Click Editing:</strong> Stewards can click directly into corrupted cells to edit values.</li>
+              <li><strong>Instant Re-Validation:</strong> Quality score updates on blur without full page reloads.</li>
+              <li><strong>REST Persistence:</strong> Calls <code>PUT /api/datasets/{id}/records</code> to update raw JSON and dynamic database tables.</li>
+              <li><strong>Audit Prompt:</strong> Prompts for resolution reason (e.g. <em>"Corrected salary typo per HR ticket #104"</em>).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; border-left: 4px solid var(--accent-purple);">
+        <div class="card-title" style="color: var(--accent-purple);">🔍 Contextual Value Inspector (Polymorphic Disambiguator)</div>
+        <div class="card-body" style="font-size: 0.88rem;">
+          Ever wonder how a value like <code>"120"</code> behaves across different schemas? The <strong>Contextual Disambiguator Modal</strong> evaluates polymorphic values across Salary vs. Department ID vs. Quantity vs. Zip Code to prevent cross-domain contamination.
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 12: Automated Remediation & Auto-Fix Verification -->
+    <section class="slide" id="slide-12" data-title="Automated Remediation & Schema Extensions">
+      <div class="slide-category">Advanced Features • Stewardship Acceleration</div>
+      <h2 class="slide-title">Auto-Fix Preview, Schema Extensions & Header Resolution</h2>
+      <p class="slide-subtitle">Three advanced capabilities engineered to eliminate manual stewardship friction and safeguard data integrity.</p>
+
+      <div class="grid-3">
+        <div class="card" style="border-top: 4px solid var(--accent-emerald);">
+          <div class="card-title" style="color: var(--accent-emerald); font-size: 1.05rem;">Auto-Fix Verification Preview</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <p><strong>Component:</strong> <code>AutoFixVerificationModal.tsx</code></p>
+            <p style="margin: 0.5rem 0;">Prevents blind bulk overrides by presenting a <strong>side-by-side visual diff</strong> before committing:</p>
+            <ul class="feature-list">
+              <li>Sequential unallocated worker ID allocation.</li>
+              <li>Email string normalisation (lowercase, trim).</li>
+              <li>Steward inspects old vs. proposed value.</li>
+              <li>One-click commit directly to PostgreSQL.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--accent-cyan);">
+          <div class="card-title" style="color: var(--accent-cyan); font-size: 1.05rem;">Dynamic Schema Extension</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <p><strong>Component:</strong> <code>AddColumnModal.tsx</code></p>
+            <p style="margin: 0.5rem 0;">Allows appending new attributes into existing datasets with zero backend downtime:</p>
+            <ul class="feature-list">
+              <li>Smart type inference (<code>STRING</code>, <code>NUMBER</code>, <code>DATE</code>, <code>EMAIL</code>).</li>
+              <li>Multi-valued support with custom delimiters (<code>,</code>, <code>;</code>, <code>|</code>).</li>
+              <li>Automatic baseline validation rule generation for the new column.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--accent-amber);">
+          <div class="card-title" style="color: var(--accent-amber); font-size: 1.05rem;">Duplicate Header Resolver</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <p><strong>Component:</strong> <code>DuplicateColumnResolverModal.tsx</code></p>
+            <p style="margin: 0.5rem 0;">Resolves malformed CSV uploads with repeated header names:</p>
+            <ul class="feature-list">
+              <li>Traps collisions before database staging.</li>
+              <li>Interactive renaming interface for stewards.</li>
+              <li>Prevents column clobbering in PostgreSQL.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 13: Enterprise Audit Trail & Compliance Export -->
+    <section class="slide" id="slide-13" data-title="Audit Trail & Compliance Export">
+      <div class="slide-category">Compliance & Governance • Audit Trail</div>
+      <h2 class="slide-title">Immutable Audit Trail & Regulatory Compliance Export</h2>
+      <p class="slide-subtitle">Every remediation action, rule modification, and data override is recorded immutably to satisfy Sarbanes-Oxley, GDPR, and ISO-9001 audits.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Immutable Resolution Audit Log</div>
+          <div class="card-body">
+            <p>Stored in PostgreSQL table <code>resolution_history</code>:</p>
+            <table class="data-table" style="font-size: 0.8rem; margin-top: 0.6rem;">
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>issue_id</code></td><td>Unique violation identifier</td></tr>
+                <tr><td><code>action</code></td><td>AUTO_FIX, MANUAL_OVERRIDE, WAIVED</td></tr>
+                <tr><td><code>original_value</code></td><td>Historical corrupted value preserved</td></tr>
+                <tr><td><code>resolved_value</code></td><td>New sanitized value</td></tr>
+                <tr><td><code>resolved_by</code></td><td>Authenticated user / data steward</td></tr>
+                <tr><td><code>timestamp</code></td><td>ISO 8601 UTC timestamp</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Compliance Package & CSV Export</div>
+          <div class="card-body">
+            <p>From the <strong>Audit & Export View</strong>, users can export two critical deliverables:</p>
+            <ul class="feature-list" style="margin-top: 0.6rem;">
+              <li><strong>Sanitized Clean CSV:</strong> Export the validated, defect-free dataset ready for downstream SAP / ERP ingest.</li>
+              <li><strong>JSON Compliance Audit Package:</strong> Comprehensive export containing dataset metadata, applied rules, run history, defect coordinates, and sign-offs.</li>
+              <li><strong>Audit Stewardship CRUD:</strong> Update comments or delete obsolete logs via <code>AuditController.java</code> endpoints.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 14: Team Ownership Architecture -->
+    <section class="slide" id="slide-14" data-title="Team Ownership & System Tier Map">
+      <div class="slide-category">Engineering Organization • System Ownership</div>
+      <h2 class="slide-title">The SilentGuard Engineering Team Structure</h2>
+      <p class="slide-subtitle">A balanced 6-member engineering unit where each engineer owns an end-to-end slice of the system architecture.</p>
+
+      <div class="grid-3">
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <div class="badge badge-cyan" style="width: fit-content; margin-bottom: 0.3rem;">Tier 1: Presentation</div>
+          <div class="card-title" style="font-size: 1.05rem;">Member 1</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <strong>UI Dashboard & Health Overview</strong>
+            <p style="color: #94a3b8; margin-top: 0.4rem;">Owns Navbar, Dashboard health metrics, run comparison trends, and state persistence.</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+          <div class="badge badge-cyan" style="width: fit-content; margin-bottom: 0.3rem;">Tier 1: Presentation</div>
+          <div class="card-title" style="font-size: 1.05rem;">Member 2</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <strong>Interactive Grid & Remediation</strong>
+            <p style="color: #94a3b8; margin-top: 0.4rem;">Owns Data Explorer spreadsheet, Auto-Fix diff modal, dynamic schema addition, and drawer.</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-emerald);">
+          <div class="badge badge-emerald" style="width: fit-content; margin-bottom: 0.3rem;">Tier 2: API Gateway</div>
+          <div class="card-title" style="font-size: 1.05rem;">Member 3</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <strong>API Integration & File Ingestion</strong>
+            <p style="color: #94a3b8; margin-top: 0.4rem;">Owns multipart file upload, REST client layer, CORS security, and Audit CRUD endpoints.</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-emerald);">
+          <div class="badge badge-emerald" style="width: fit-content; margin-bottom: 0.3rem;">Tier 2: Business Logic</div>
+          <div class="card-title" style="font-size: 1.05rem;">Member 4</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <strong>Validation Engine & Algorithms</strong>
+            <p style="color: #94a3b8; margin-top: 0.4rem;">Owns the 8 server-side rule processors, continuous scoring algorithm, and Schema Drift alerts.</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-indigo);">
+          <div class="badge badge-indigo" style="width: fit-content; margin-bottom: 0.3rem;">Tier 3: Database</div>
+          <div class="card-title" style="font-size: 1.05rem;">Member 5</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <strong>Dynamic Database & Batch Streaming</strong>
+            <p style="color: #94a3b8; margin-top: 0.4rem;">Owns dynamic DDL generation, parameterized SQL batching, and multithreaded chunk partitioning.</p>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-indigo);">
+          <div class="badge badge-indigo" style="width: fit-content; margin-bottom: 0.3rem;">Tier 3: Persistence</div>
+          <div class="card-title" style="font-size: 1.05rem;">Member 6</div>
+          <div class="card-body" style="font-size: 0.85rem;">
+            <strong>Persistence, JPA & Seeding Lead</strong>
+            <p style="color: #94a3b8; margin-top: 0.4rem;">Owns JPA entities, startup tri-preset database seeding, rule configuration, and audit tables.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 15: Member 1 Spotlight -->
+    <section class="slide" id="slide-15" data-title="Team Spotlight: Member 1">
+      <div class="slide-category">Team Spotlight • Member 1</div>
+      <h2 class="slide-title">Member 1: UI Dashboard & Health Overview Architect</h2>
+      <p class="slide-subtitle">Architect of the high-level presentation layer, system health telemetry, and execution run trends.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Core Ownership & Key Files</div>
+          <div class="card-body">
+            <p><strong>Primary Source Files:</strong></p>
+            <ul class="feature-list" style="margin-top: 0.4rem;">
+              <li><code>src/App.tsx</code> — Top-level state orchestration & backend data loading</li>
+              <li><code>src/components/Navbar.tsx</code> — Categorized dataset switcher & live status pill</li>
+              <li><code>src/components/DashboardView.tsx</code> — Health score dial, severity counters</li>
+              <li><code>src/components/RunHistoryView.tsx</code> — Historical execution delta comparison</li>
+              <li><code>src/components/ContextualDisambiguatorModal.tsx</code> — Value inspector</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Key Technical Highlights & Extra Functionalities</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Categorized Preset Selector:</strong> Grouped dropdown in Navbar organizing datasets into <em>✨ Enterprise Presets</em> vs <em>📂 Database Uploads</em> with zero text truncation.</li>
+              <li><strong>Heartbeat Status Pill:</strong> Instant visual indicator (<code>🟢 PostgreSQL 16 Connected</code> / <code>🟡 Client Fallback</code>).</li>
+              <li><strong>State Persistence:</strong> Preserves active dataset selections and filter settings across browser reloads via <code>localStorage</code>.</li>
+              <li><strong>Run Comparison Delta:</strong> Computes side-by-side progression between validation runs (e.g. +28% health score, 14 defects eliminated).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; background: rgba(6, 182, 212, 0.08); border-color: rgba(6, 182, 212, 0.3);">
+        <div style="font-weight: 700; color: var(--accent-cyan); font-size: 0.95rem;">🎙️ Member 1's Talking Point for Manager:</div>
+        <p style="font-size: 0.88rem; color: #cbd5e1; margin-top: 0.3rem;">
+          <em>"I own the client presentation tier. When a user opens SilentGuard, my code establishes the heartbeat check with the Spring Boot backend, displays the categorized dataset navigation, and renders the health score and execution timeline to track quality trends over time."</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 16: Member 2 Spotlight -->
+    <section class="slide" id="slide-16" data-title="Team Spotlight: Member 2">
+      <div class="slide-category">Team Spotlight • Member 2</div>
+      <h2 class="slide-title">Member 2: Interactive Grid & Issue Resolution Steward</h2>
+      <p class="slide-subtitle">Master of the spreadsheet data grid, cell-level defect highlighting, and in-place remediation workflows.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Core Ownership & Key Files</div>
+          <div class="card-body">
+            <p><strong>Primary Source Files:</strong></p>
+            <ul class="feature-list" style="margin-top: 0.4rem;">
+              <li><code>src/components/DataExplorerView.tsx</code> — Tabular grid, error badges, cell edit</li>
+              <li><code>src/components/AutoFixVerificationModal.tsx</code> — Side-by-side auto-fix diff preview</li>
+              <li><code>src/components/AddColumnModal.tsx</code> — Dynamic schema extension modal</li>
+              <li><code>src/components/DuplicateColumnResolverModal.tsx</code> — Header collision resolver</li>
+              <li><code>src/components/IssueResolutionDrawer.tsx</code> — Slide-out resolution panel</li>
+              <li><code>src/components/ExportAuditView.tsx</code> — CSV & JSON audit exporter</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Key Technical Highlights & Extra Functionalities</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Cell-Level Highlighting:</strong> Links individual rows/columns to <code>validation_issues</code> with color-coded severity tags.</li>
+              <li><strong>In-Place Cell Editing:</strong> Allows double-clicking corrupted cells to update values directly into PostgreSQL via <code>PUT /api/datasets/{id}/records</code>.</li>
+              <li><strong>Auto-Fix Verification Preview:</strong> Side-by-side diff modal allowing stewards to inspect proposed automated corrections before database commit.</li>
+              <li><strong>Dynamic Column Addition:</strong> Smart type detection (String, Number, Date, Multi-Valued) and instant baseline rule synthesis.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.3);">
+        <div style="font-weight: 700; color: var(--accent-emerald); font-size: 0.95rem;">🎙️ Member 2's Talking Point for Manager:</div>
+        <p style="font-size: 0.88rem; color: #cbd5e1; margin-top: 0.3rem;">
+          <em>"I own the Data Explorer and issue remediation flow. My components highlight corrupted values directly in the tabular grid, allow data stewards to correct records in-place with instant re-validation, verify auto-fixes in a visual diff preview before database commit, and maintain a traceable audit history."</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 17: Member 3 Spotlight -->
+    <section class="slide" id="slide-17" data-title="Team Spotlight: Member 3">
+      <div class="slide-category">Team Spotlight • Member 3</div>
+      <h2 class="slide-title">Member 3: API Integration & File Ingestion Specialist</h2>
+      <p class="slide-subtitle">Bridge engineer connecting the frontend interface to Spring Boot REST endpoints with security and exception management.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Core Ownership & Key Files</div>
+          <div class="card-body">
+            <p><strong>Primary Source Files:</strong></p>
+            <ul class="feature-list" style="margin-top: 0.4rem;">
+              <li><code>src/components/UploadModal.tsx</code> — Drag & drop multipart CSV uploader</li>
+              <li><code>src/services/api.ts</code> — Strongly-typed REST client service</li>
+              <li><code>backend/.../controller/DatasetController.java</code> — REST dataset endpoints</li>
+              <li><code>backend/.../controller/AuditController.java</code> — Audit trail lifecycle endpoints</li>
+              <li><code>backend/.../config/CorsConfig.java</code> — Cross-Origin Resource Sharing filter</li>
+              <li><code>backend/.../config/GlobalExceptionHandler.java</code> — Error handling</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Key Technical Highlights & Extra Functionalities</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Multipart File Streaming:</strong> Transmits 50MB+ CSV files via <code>FormData</code> and <code>POST /api/datasets/upload</code> with upload progress tracking.</li>
+              <li><strong>Type-Safe REST Client:</strong> Maps raw JSON payloads into strict TypeScript models (<code>Dataset</code>, <code>ValidationRun</code>, <code>ValidationIssue</code>).</li>
+              <li><strong>Audit Trail CRUD:</strong> Implemented <code>PUT /api/audit/resolutions/{id}</code> and <code>DELETE /api/audit/resolutions/{id}</code> for audit record lifecycle.</li>
+              <li><strong>Robust Exception Handling:</strong> Catches upload size violations and malformed arguments with structured HTTP response entities.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.3);">
+        <div style="font-weight: 700; color: var(--accent-indigo); font-size: 0.95rem;">🎙️ Member 3's Talking Point for Manager:</div>
+        <p style="font-size: 0.88rem; color: #cbd5e1; margin-top: 0.3rem;">
+          <em>"I handle the integration bridge. I ensure files are securely transferred from the browser to Spring Boot via multipart REST APIs, manage CORS headers, map data into TypeScript contracts, maintain full audit trail lifecycle endpoints, and handle errors gracefully."</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 18: Member 4 Spotlight -->
+    <section class="slide" id="slide-18" data-title="Team Spotlight: Member 4">
+      <div class="slide-category">Team Spotlight • Member 4</div>
+      <h2 class="slide-title">Member 4: Core Validation Engine & Algorithm Specialist</h2>
+      <p class="slide-subtitle">Brain of the system, authoring server-side deterministic rule execution, Schema Drift detection, and mathematical health scoring.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Core Ownership & Key Files</div>
+          <div class="card-body">
+            <p><strong>Primary Source Files:</strong></p>
+            <ul class="feature-list" style="margin-top: 0.4rem;">
+              <li><code>backend/.../service/ValidationEngineService.java</code> — Server-side rule engine</li>
+              <li><code>backend/.../controller/ValidationController.java</code> — <code>POST /api/validation/execute</code></li>
+              <li><code>src/services/validationEngine.ts</code> — Browser fallback validation parity</li>
+              <li><code>src/types/index.ts</code> — RuleType and ValidationIssue definitions</li>
+              <li><code>src/data/mockDatasets.ts</code> — Validation presets and enterprise dictionaries</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Key Technical Highlights & Extra Functionalities</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>8 Rule Processors:</strong> Deterministic evaluation of Required, Unique, Boundary, Format Regex, Cross-Field, Referential, Drift, and Constraints.</li>
+              <li><strong>Schema Drift Engine:</strong> Automatically detects when configured enterprise rules target columns that are missing from uploaded CSVs.</li>
+              <li><strong>Graduated Health Score Formula:</strong> Engineered continuous scoring balancing Pass Ratio against Defect Density to prevent sudden 0% cliffs.</li>
+              <li><strong>Client-Server Parity:</strong> Maintained identical mathematical logic between Java and TypeScript implementations.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3);">
+        <div style="font-weight: 700; color: var(--accent-amber); font-size: 0.95rem;">🎙️ Member 4's Talking Point for Manager:</div>
+        <p style="font-size: 0.88rem; color: #cbd5e1; margin-top: 0.3rem;">
+          <em>"I designed the validation engine and algorithms. When a dataset is submitted, my service evaluates all 8 rule types, detects Schema Drift, computes the graduated health score, and flags record-level defects for the database."</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 19: Member 5 Spotlight -->
+    <section class="slide" id="slide-19" data-title="Team Spotlight: Member 5">
+      <div class="slide-category">Team Spotlight • Member 5</div>
+      <h2 class="slide-title">Member 5: Dynamic Database Tier & CSV Streaming</h2>
+      <p class="slide-subtitle">Architect of dynamic DDL generation, SQL injection defense, and high-throughput multithreaded chunk partitioning.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Core Ownership & Key Files</div>
+          <div class="card-body">
+            <p><strong>Primary Source Files:</strong></p>
+            <ul class="feature-list" style="margin-top: 0.4rem;">
+              <li><code>backend/.../service/CsvImportService.java</code> — Dynamic DDL & batch insertion</li>
+              <li><code>backend/.../service/SpringBatchPartitioningService.java</code> — Chunk partitioner</li>
+              <li><code>backend/src/main/resources/application.properties</code> — HikariCP pool config</li>
+              <li><code>backend/pom.xml</code> — Apache Commons CSV & PostgreSQL dependencies</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Key Technical Highlights & Extra Functionalities</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Dynamic Table Provisioning:</strong> Generates isolated <code>ds_&lt;filename&gt;</code> PostgreSQL tables on the fly with sanitized headers and <code>TEXT</code> columns.</li>
+              <li><strong>SQL Injection Defense:</strong> Strips special characters via regex whitelist and enforces parameterized batch statements via <code>JdbcTemplate</code>.</li>
+              <li><strong>Spring Batch Chunk Partitioning:</strong> Streams massive files in 5,000-record chunks with 4 parallel worker threads in $O(1)$ memory.</li>
+              <li><strong>Batch Benchmark API:</strong> Implemented <code>POST /api/datasets/batch-process</code> returning throughput, chunk count, and execution metrics.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.3);">
+        <div style="font-weight: 700; color: var(--accent-emerald); font-size: 0.95rem;">🎙️ Member 5's Talking Point for Manager:</div>
+        <p style="font-size: 0.88rem; color: #cbd5e1; margin-top: 0.3rem;">
+          <em>"I am responsible for the dynamic data tier. Rather than dumping every CSV into a generic table, my service dynamically generates a strongly-isolated PostgreSQL table for each upload, sanitizes headers, and safely inserts rows using parameterized SQL and parallel chunk partitioning."</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 20: Member 6 Spotlight -->
+    <section class="slide" id="slide-20" data-title="Team Spotlight: Member 6">
+      <div class="slide-category">Team Spotlight • Member 6</div>
+      <h2 class="slide-title">Member 6: Persistence, JPA Modeling & Seeding Lead</h2>
+      <p class="slide-subtitle">Master of the relational schema, JPA entity lifecycles, automated multi-preset database seeding, and rule persistence.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-cyan);">Core Ownership & Key Files</div>
+          <div class="card-body">
+            <p><strong>Primary Source Files:</strong></p>
+            <ul class="feature-list" style="margin-top: 0.4rem;">
+              <li><code>backend/.../config/DataInitializer.java</code> — Automated startup seeder</li>
+              <li><code>backend/.../model/</code> — 5 JPA entities (Datasets, Rules, Runs, Issues, History)</li>
+              <li><code>backend/.../repository/</code> — Spring Data JPA repository interfaces</li>
+              <li><code>backend/.../controller/RuleController.java</code> — Rule CRUD & toggle endpoints</li>
+              <li><code>src/components/RuleConfiguratorView.tsx</code> — Rule builder & catalog UI</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-emerald);">Key Technical Highlights & Extra Functionalities</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Automated Tri-Preset Seeding:</strong> Seeds 21 enterprise rules and 3 full datasets (HR, Motherson Automotive, FinTech) on startup.</li>
+              <li><strong>Baseline Validation Execution:</strong> Runs initial validations on boot so health scores and issues are immediately queryable.</li>
+              <li><strong>JPA Repository Optimization:</strong> Added custom query methods like <code>findByFileNameOrderByCreatedAtDesc</code> for zero-lag deduplication.</li>
+              <li><strong>Dynamic Catalog Expansion:</strong> Allows live UI updates to foreign-key dictionaries persisting directly to PostgreSQL.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.3);">
+        <div style="font-weight: 700; color: var(--accent-purple); font-size: 0.95rem;">🎙️ Member 6's Talking Point for Manager:</div>
+        <p style="font-size: 0.88rem; color: #cbd5e1; margin-top: 0.3rem;">
+          <em>"I maintain the relational schema, JPA entities, and database repositories. I built the DataInitializer that automatically prepares our database on first launch with 21 business rules and 3 enterprise presets, and manage the rule repository and audit persistence layer."</em>
+        </p>
+      </div>
+    </section>
+
+    <!-- SLIDE 21: Live Demo Choreography -->
+    <section class="slide" id="slide-21" data-title="Live Demo Choreography">
+      <div class="slide-category">Presentation Playbook • Demo Choreography</div>
+      <h2 class="slide-title">Step-by-Step Live Demo Choreography for Tomorrow</h2>
+      <p class="slide-subtitle">A coordinated, 6-stage presentation sequence designed to impress your reporting manager seamlessly.</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 10%;">Step</th>
+            <th style="width: 18%;">Presenter</th>
+            <th style="width: 36%;">Action on Screen</th>
+            <th style="width: 36%;">Key Talking Point for Manager</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td><strong style="color: var(--accent-cyan);">Member 1</strong></td>
+            <td>Open <code>http://localhost:3000</code>. Point out <code>🟢 PostgreSQL 16 Connected</code> and explain the Dashboard Health Score dial.</td>
+            <td><em>"Notice our live backend heartbeat check, categorized dataset navigation, and executive score dial."</em></td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td><strong style="color: var(--accent-indigo);">Member 3</strong></td>
+            <td>Click <strong>Upload CSV</strong>. Drag & drop <code>employee_master_roster.csv</code>. Show upload progress.</td>
+            <td><em>"Here is our multipart upload streaming the CSV to Spring Boot with CORS protection and type mapping."</em></td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td><strong style="color: var(--accent-emerald);">Member 5</strong></td>
+            <td>Switch to pgAdmin or terminal. Query dynamic table <code>ds_employee_master_roster_*</code>.</td>
+            <td><em>"See how PostgreSQL generated a dedicated table with TEXT columns, preventing ingest crashes."</em></td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td><strong style="color: var(--accent-amber);">Member 4</strong></td>
+            <td>Review detected defects: negative salary, duplicate ID, inverted dates. Walk through scoring formula.</td>
+            <td><em>"Our 8-rule deterministic engine trapped these silent failures, calculating our graduated continuous score."</em></td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td><strong style="color: var(--accent-cyan);">Member 2</strong></td>
+            <td>Open <strong>Data Explorer</strong>. Double-click invalid cell, fix value, open Auto-Fix Preview, save audit note.</td>
+            <td><em>"Stewards edit values directly in-place, preview auto-fixes in a visual diff, and record audit reasons."</em></td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td><strong style="color: var(--accent-purple);">Member 6</strong></td>
+            <td>Open <strong>Rules & Presets</strong>. Toggle a rule off/on. Show the updated state in PostgreSQL. Export audit CSV.</td>
+            <td><em>"All rules and resolution history persist immutably in PostgreSQL, generating full regulatory audit packages."</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SLIDE 22: Business Impact, ROI & Summary -->
+    <section class="slide" id="slide-22" data-title="ROI, Roadmap & Executive Conclusion">
+      <div class="slide-category">Executive Conclusion • Business Value & Roadmap</div>
+      <h2 class="slide-title">Business Impact, Measurable ROI & Future Roadmap</h2>
+      <p class="slide-subtitle">Quantifiable value delivered today and strategic milestones for enterprise-wide scaling.</p>
+
+      <div class="grid-2">
+        <div class="card" style="border-top: 4px solid var(--accent-emerald);">
+          <div class="card-title" style="color: var(--accent-emerald);">Measurable Business ROI</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Zero Downstream Pipeline Crashes:</strong> Isolating raw CSVs into TEXT staging tables eliminates 100% of data ingest aborts.</li>
+              <li><strong>85% Reduction in Data Steward Triage Time:</strong> Cell-level flagging and Auto-Fix diff previews replace manual spreadsheet detective work.</li>
+              <li><strong>Guaranteed Audit Compliance:</strong> Immutable <code>resolution_history</code> ensures compliance with ISO-9001 and SOX regulations.</li>
+              <li><strong>Multi-Tenant Ready:</strong> Supports HR, Automotive MES (Motherson), and FinTech ledger pipelines simultaneously.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--accent-indigo);">
+          <div class="card-title" style="color: var(--accent-indigo);">Strategic Roadmap (Next Phase)</div>
+          <div class="card-body">
+            <ul class="feature-list">
+              <li><strong>Apache Kafka Event Streaming:</strong> Real-time streaming validation on micro-batch topics.</li>
+              <li><strong>Automated AI Remediation Engine:</strong> Generative AI suggesting context-aware cell repairs for data stewards.</li>
+              <li><strong>Direct Enterprise Connectors:</strong> Native integrations for SAP ERP, Snowflake, Databricks, and AWS S3.</li>
+              <li><strong>Role-Based Access Control (RBAC):</strong> Granular steward vs. viewer permissions via OAuth 2.0 / SSO.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.25rem; display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 1.2rem 2rem;">
+        <div>
+          <div style="font-size: 1.2rem; font-weight: 800; color: #fff;">Thank You! We are ready for Questions & Live Demonstration.</div>
+          <div style="font-size: 0.88rem; color: #94a3b8; margin-top: 0.2rem;">SilentGuard Engineering Team • Motherson Enterprise Data Platform</div>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <span class="badge badge-cyan">Full-Stack Operational</span>
+          <span class="badge badge-emerald">PostgreSQL 16 Seeded</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Speaker Notes Drawer -->
+  <div id="speaker-notes-drawer">
+    <div class="speaker-notes-header">
+      <span id="speaker-notes-title">🎙️ Speaker Notes & Talking Points</span>
+      <span style="font-size: 0.75rem; color: #64748b;">Press 'N' or click button to toggle</span>
+    </div>
+    <div class="speaker-notes-content" id="speaker-notes-body">
+      Loading notes...
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav id="nav-bar">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span style="font-weight: 800; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.4rem;">
+        🛡️ SilentGuard
+      </span>
+      <span style="color: #475569;">|</span>
+      <select id="slide-select" aria-label="Jump to slide"></select>
+    </div>
+
+    <div class="nav-controls">
+      <span id="slide-counter" style="color: #94a3b8; font-weight: 500; margin-right: 0.5rem;">Slide 1 of 22</span>
+      <button class="btn" id="btn-prev" title="Previous Slide (Left Arrow)">◀ Prev</button>
+      <button class="btn btn-primary" id="btn-next" title="Next Slide (Right Arrow or Space)">Next ▶</button>
+      <button class="btn" id="btn-notes" title="Toggle Speaker Notes (N)">🎙️ Notes</button>
+      <button class="btn" id="btn-fullscreen" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
+      <button class="btn" id="btn-print" title="Print / Export to PDF (P)">🖨️ Print / PDF</button>
+    </div>
+  </nav>
+
+  <!-- Interactive Script -->
+  <script>
+    // Slide Data & Speaker Notes for all 22 slides
+    const notesData = [
+      // Slide 1
+      `<strong>Presenter: Team Lead / Member 1</strong><br>
+      • Welcome the reporting manager: "Good morning/afternoon. Today our team is proud to present SilentGuard — our full-stack enterprise data quality and silent failure detection engine."<br>
+      • "Over the past sprints, all 6 members of our team have collaborated to engineer an end-to-end platform spanning modern React 19, Spring Boot 4, and PostgreSQL 16."<br>
+      • "Today we will take you through both the business impact and the technical architecture, followed by a live demonstration."`,
+
+      // Slide 2
+      `<strong>Presenter: Non-Technical / Business Overview (Member 1 or 3)</strong><br>
+      • "Why did we build this? Every organization deals with CSV transfers and batch data. But standard ETLs have a massive blind spot."<br>
+      • "If a file has the right columns and valid UTF-8 encoding, existing tools mark it valid with HTTP 200. But inside, values can be negative, dates reversed, or foreign keys corrupted."<br>
+      • "According to Gartner, dirty data costs organizations an average of $12.9M annually. SilentGuard was built to solve this exact problem."`,
+
+      // Slide 3
+      `<strong>Presenter: Technical Core (Member 4 or 5)</strong><br>
+      • "Let's examine what happens under the hood when bad data arrives. In standard SQL databases, you either get a catastrophic crash when parsing 'N/A' into a numeric column, or you use loose types and poison downstream reports."<br>
+      • "SilentGuard introduces dynamic polymorphic ingestion: raw data is staged safely as TEXT, and deterministic rule engines inspect every single cell without stopping the pipeline."`,
+
+      // Slide 4
+      `<strong>Presenter: Domain Solutions (Member 6)</strong><br>
+      • "We didn't just build a generic validator; we pre-seeded SilentGuard with 3 ready-to-run enterprise domains:"<br>
+      • "1. Corporate HR Master: catches missing emails, duplicate employee IDs, and out-of-range salary figures."<br>
+      • "2. Motherson Automotive MES: guarantees manufacturing traceability, validating supplier codes and preventing negative quantities."<br>
+      • "3. Financial Orders: validates ISO currencies and prevents double-billing duplicate transactions."`,
+
+      // Slide 5
+      `<strong>Presenter: Architecture Lead (Member 1 & 5)</strong><br>
+      • "Here is our 3-tier architecture: At the top is our React 19 frontend with real-time health gauges and an interactive grid."<br>
+      • "In the center is our Spring Boot 4 backend handling streaming CSV ingestion, 8 rule categories, and multithreaded chunk partitioning."<br>
+      • "At the base is PostgreSQL 16 providing dynamic DDL staging tables and an immutable audit trail."`,
+
+      // Slide 6
+      `<strong>Presenter: Validation Engine Lead (Member 4)</strong><br>
+      • "Let's walk through our 8 deterministic rule processors. Unlike probabilistic or slow AI checkers, these are 100% deterministic, instant, and predictable."<br>
+      • "We cover completeness, composite uniqueness, numerical ranges, regex patterns, cross-field chronological logic, catalog referential checks, and Schema Drift alerts."`,
+
+      // Slide 7
+      `<strong>Presenter: Scoring Mathematician (Member 4)</strong><br>
+      • "A critical feature of SilentGuard is our Graduated Continuous Health Scoring model."<br>
+      • "Binary scoring formulas are flawed — one bad record shouldn't plunge a 10,000-row file to 0%. Our continuous formula balances clean pass ratios with weighted defect density (Critical 2.5x, Error 1.0x, Warning 0.2x)."<br>
+      • "Most importantly: our Java backend and TypeScript frontend compute the exact same mathematical score."`,
+
+      // Slide 8
+      `<strong>Presenter: Dynamic Database Specialist (Member 5)</strong><br>
+      • "Look at our dynamic database tier. When a user uploads a file, CsvImportService doesn't squeeze it into a generic key-value table. It dynamically provisions an isolated 'ds_<filename>' table in PostgreSQL."<br>
+      • "We sanitize column headers with a strict whitelist to prevent SQL injection, and bind rows using parameterized batch statements via JdbcTemplate."`,
+
+      // Slide 9
+      `<strong>Presenter: Scalability & Partitioning Engineer (Member 5)</strong><br>
+      • "For large enterprise files, we implemented Spring Batch chunk partitioning in SpringBatchPartitioningService.java."<br>
+      • "It streams files in 5,000-row chunks using 4 parallel worker threads. The memory footprint remains completely flat under 64MB regardless of whether the file has 1,000 or 500,000 records."`,
+
+      // Slide 10
+      `<strong>Presenter: UI Architect (Member 1)</strong><br>
+      • "Our frontend features a resilient dual-mode architecture. In Connected Mode, it talks to Spring Boot and PostgreSQL with live status indicators."<br>
+      • "If the connection is ever lost, it falls back seamlessly to an isomorphic client engine (validationEngine.ts) right in the browser with zero UI interruptions."`,
+
+      // Slide 11
+      `<strong>Presenter: Data Stewardship Lead (Member 2)</strong><br>
+      • "In the Data Explorer, data stewards get a full spreadsheet experience. Violating cells glow with color-coded severity tags."<br>
+      • "Stewards can double-click any cell, fix the typo in-place, and watch the quality score recalculate instantly while saving directly to PostgreSQL."`,
+
+      // Slide 12
+      `<strong>Presenter: Remediation Specialist (Member 2)</strong><br>
+      • "We also built three advanced workflows: Auto-Fix Verification with side-by-side visual diffs, dynamic column addition with smart type detection, and duplicate header disambiguation."<br>
+      • "Stewards never commit bulk fixes blindly; they inspect and verify first."`,
+
+      // Slide 13
+      `<strong>Presenter: Compliance & Governance (Member 3 & 6)</strong><br>
+      • "Every fix, waiver, and edit is stored in our immutable 'resolution_history' table in PostgreSQL."<br>
+      • "Data stewards can export cleaned CSVs ready for downstream production, alongside full JSON compliance packages satisfying ISO-9001 and SOX regulatory audits."`,
+
+      // Slide 14
+      `<strong>Presenter: Team Overview (Team Lead)</strong><br>
+      • "Now, we would like each team member to briefly present their individual engineering contributions and architectural ownership."<br>
+      • "We have divided our system into Presentation, API Gateway, Validation Intelligence, Database Streaming, and Persistence."`,
+
+      // Slide 15
+      `<strong>Presenter: Member 1 Speaking</strong><br>
+      • "I own the client-side presentation layer. When a user opens SilentGuard, my code establishes the heartbeat check with the Spring Boot backend, displays the categorized dataset selector with enterprise presets, and renders the health score and execution timeline to track quality trends over time."`,
+
+      // Slide 16
+      `<strong>Presenter: Member 2 Speaking</strong><br>
+      • "I own the Data Explorer and issue remediation flow. My components highlight corrupted values directly in the tabular grid, allow data stewards to correct records in-place with instant re-validation, verify auto-fixes in a visual diff preview before database commit, and maintain a traceable audit history."`,
+
+      // Slide 17
+      `<strong>Presenter: Member 3 Speaking</strong><br>
+      • "I handle the integration bridge. I ensure files are securely transferred from the browser to Spring Boot via multipart REST APIs, manage CORS headers, map data into TypeScript contracts, maintain full audit trail lifecycle endpoints, and handle errors gracefully."`,
+
+      // Slide 18
+      `<strong>Presenter: Member 4 Speaking</strong><br>
+      • "I designed the validation engine and algorithms. When a dataset is submitted, my service evaluates all 8 rule types, detects Schema Drift, computes the graduated health score, and flags record-level defects for the database."`,
+
+      // Slide 19
+      `<strong>Presenter: Member 5 Speaking</strong><br>
+      • "I am responsible for the dynamic data tier. Rather than dumping every CSV into a generic table, my service dynamically generates a strongly-isolated PostgreSQL table for each upload, sanitizes headers, and safely inserts rows using parameterized SQL and parallel chunk partitioning."`,
+
+      // Slide 20
+      `<strong>Presenter: Member 6 Speaking</strong><br>
+      • "I maintain the relational schema, JPA entities, and database repositories. I built the DataInitializer that automatically prepares our database on first launch with 21 business rules and 3 enterprise presets, and manage the rule repository and audit persistence layer."`,
+
+      // Slide 21
+      `<strong>Presenter: Team Lead / All Members</strong><br>
+      • "Here is our 6-step live demo choreography for our session with you today:"<br>
+      • "Member 1 shows the health status and dashboard dial; Member 3 uploads the CSV; Member 5 shows the dynamic SQL table in Postgres; Member 4 explains the detected defects; Member 2 corrects a cell live and previews auto-fix; Member 6 toggles a rule and exports the audit package."`,
+
+      // Slide 22
+      `<strong>Presenter: Team Lead / Executive Closing</strong><br>
+      • "To summarize the business value: SilentGuard eliminates 100% of pipeline aborts, reduces data cleaning time by 85%, and provides complete audit compliance."<br>
+      • "Our next phase will integrate Apache Kafka streaming and automated AI suggestions."<br>
+      • "Thank you, and we welcome your questions!"`
+    ];
+
+    // State
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const select = document.getElementById('slide-select');
+    const counter = document.getElementById('slide-counter');
+    const progressBar = document.getElementById('progress-bar');
+    const notesDrawer = document.getElementById('speaker-notes-drawer');
+    const notesBody = document.getElementById('speaker-notes-body');
+    const notesTitle = document.getElementById('speaker-notes-title');
+
+    // Populate Slide Selector
+    slides.forEach((slide, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = `${index + 1}. ${slide.getAttribute('data-title') || 'Slide ' + (index + 1)}`;
+      select.appendChild(option);
+    });
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+
+      slides[currentSlide].classList.remove('active');
+      currentSlide = index;
+      slides[currentSlide].classList.add('active');
+
+      // Update UI elements
+      select.value = currentSlide;
+      counter.textContent = `Slide ${currentSlide + 1} of ${totalSlides}`;
+      const pct = ((currentSlide + 1) / totalSlides) * 100;
+      progressBar.style.width = `${pct}%`;
+
+      // Update Speaker Notes
+      const title = slides[currentSlide].getAttribute('data-title') || `Slide ${currentSlide + 1}`;
+      notesTitle.innerHTML = `🎙️ Speaker Notes: <strong>Slide ${currentSlide + 1} — ${title}</strong>`;
+      notesBody.innerHTML = notesData[currentSlide] || 'No notes for this slide.';
+    }
+
+    // Controls
+    document.getElementById('btn-prev').addEventListener('click', () => showSlide(currentSlide - 1));
+    document.getElementById('btn-next').addEventListener('click', () => showSlide(currentSlide + 1));
+    select.addEventListener('change', (e) => showSlide(parseInt(e.target.value)));
+
+    // Toggle Notes
+    document.getElementById('btn-notes').addEventListener('click', () => {
+      notesDrawer.classList.toggle('open');
+    });
+
+    // Toggle Fullscreen
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        document.exitFullscreen().catch(err => console.log(err));
+      }
+    });
+
+    // Print
+    document.getElementById('btn-print').addEventListener('click', () => {
+      window.print();
+    });
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        showSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        showSlide(currentSlide - 1);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        showSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        showSlide(totalSlides - 1);
+      } else if (e.key.toLowerCase() === 'n') {
+        notesDrawer.classList.toggle('open');
+      } else if (e.key.toLowerCase() === 'f') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      } else if (e.key.toLowerCase() === 'p') {
+        window.print();
+      }
+    });
+
+    // Init
+    showSlide(0);
+  </script>
+</body>
+</html>
